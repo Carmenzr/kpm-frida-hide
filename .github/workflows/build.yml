@@ -1,0 +1,22 @@
+name: build-kpm
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu make
+      - name: KernelPatch headers
+        run: git clone --depth 1 https://github.com/bmax121/KernelPatch.git KernelPatch
+      - name: Build
+        run: make -j4
+      - name: Show
+        run: file kpm-frida-hide.kpm 2>/dev/null || ls -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kpm-frida-hide
+          path: '*.kpm'
