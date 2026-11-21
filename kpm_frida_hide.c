@@ -45,9 +45,17 @@ static void scrub(char *s)
 static char *hook_d_path(const void *path, char *buf, int buflen)
 {
     char *ret = orig_d_path(path, buf, buflen);
+    char *end;
 
-    if (ret)
-        scrub(ret);
+    /* d_path() normally returns a pointer inside buf, but the short-path cases can
+     * return the dentry name itself (read-only memory). Only touch the caller's
+     * buffer, never a foreign string. */
+    if (!ret || buflen <= 0)
+        return ret;
+    end = buf + buflen;
+    if (ret < buf || ret >= end)
+        return ret;
+    scrub(ret);
     return ret;
 }
 
